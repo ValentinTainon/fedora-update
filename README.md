@@ -1,6 +1,6 @@
 # Fedora update
 
-Regular update script for fedora system :
+Regular update script for Fedora Workstation system :
 
 - Firmwares
 - DNF
