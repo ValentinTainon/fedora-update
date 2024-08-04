@@ -9,23 +9,22 @@ MAGENTA="\e[35m"
 CYAN="\e[36m"
 RESET_CLR="\e[0m"
 
-### GLOBAL VARS ###
-IS_UPDATE_AVAILABLE="false"
-
 ### FUNCTIONS ###
 check_cmd() {
     if [ $? -eq 0 ]; then
         echo -e "[$GREEN OK $RESET_CLR]"
     else
-        echo -e "[$RED ERREUR $RESET_CLR]"
+        echo -e "[$RED ERROR $RESET_CLR]"
+        exit 1
     fi
 }
 
 ### START OF SCRIPT ###
+is_update_available="false"
 
 ### FIRMWARES ###
 if ! fwupdmgr get-updates 2>&1 | grep -q "No updates available"; then
-    IS_UPDATE_AVAILABLE="true"
+    is_update_available="true"
 
     echo -e "${MAGENTA}FIRMWARES : $RESET_CLR"
 
@@ -36,8 +35,8 @@ fi
 dnf check-update >/dev/null 2>&1
 
 if [[ $? -eq 100 ]]; then
-    IS_UPDATE_AVAILABLE="true"
-    PKG_NEED_REBOOT=$(dnf check-update | grep -Eo '^(dbus-broker|glibc|kernel|linux-firmware|systemd)' | sort | uniq | xargs)
+    is_update_available="true"
+    pkg_need_reboot=$(dnf check-update | grep -Eo '^(dbus-broker|glibc|kernel|linux-firmware|systemd)' | sort | uniq | xargs)
 
     echo -e "${MAGENTA}DNF : $RESET_CLR"
 
@@ -46,7 +45,7 @@ fi
 
 ### FLATPAK ###
 if ! flatpak update | grep -q "Nothing to do"; then
-    IS_UPDATE_AVAILABLE="true"
+    is_update_available="true"
 
     echo -e "${MAGENTA}FLATPAK : $RESET_CLR"
 
@@ -54,52 +53,52 @@ if ! flatpak update | grep -q "Nothing to do"; then
 fi
 
 ### XAMPP ###
-XAMPP_DEVICE_VERSION=$(grep -Po '(?<=base_stack_version=).*(?=-)' /opt/lampp/properties.ini | sed 's/\.//g')
-XAMPP_WEB_VERSION=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep -Po '(?<=xampp-linux-x64-).*(?=-.*-installer.run)' | sed 's/\.//g')
+xampp_device_version=$(grep -Po '(?<=base_stack_version=).*(?=-)' /opt/lampp/properties.ini | sed 's/\.//g')
+xampp_web_version=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep -Po '(?<=xampp-linux-x64-).*(?=-.*-installer.run)' | sed 's/\.//g')
 
-if [[ $XAMPP_DEVICE_VERSION -lt $XAMPP_WEB_VERSION ]]; then
-    IS_UPDATE_AVAILABLE="true"
+if [[ $xampp_device_version -lt $xampp_web_version ]]; then
+    is_update_available="true"
 
     echo -e "${MAGENTA}XAMPP : $RESET_CLR"
     
-    echo -ne "${YELLOW}Nouvelle version disponible ! Voulez-vous faire la mise à jour ? [y/N] : $RESET_CLR"
-    read RESPONSE
+    echo -ne "${YELLOW}New version available! Do you want to update? [y/N] : $RESET_CLR"
+    read response
 
-    if [ "$RESPONSE" == "y" ]; then
-        XAMPP_INSTALLER_LINK=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep 'xampp-linux' | grep -Po '(?<=download_success.html" href=")[^"]+')
+    if [ "$response" == "y" ]; then
+        xampp_installer_link=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep 'xampp-linux' | grep -Po '(?<=download_success.html" href=")[^"]+')
         
-        echo -n "Téléchargement du programme d'installation de XAMPP : "
-        wget -q "$XAMPP_INSTALLER_LINK" -O xampp-installer.run >/dev/null
+        echo -n "Downloading the XAMPP installer: "
+        wget -q "$xampp_installer_link" -O xampp-installer.run >/dev/null
         check_cmd
 
-        echo -n "Configuration des droits du programme d'installation : "
+        echo -n "Configuring installer rights: "
         sudo chmod u+x xampp-installer.run
         check_cmd
 
-        echo -n "Installation de XAMPP : "
+        echo -n "Installing XAMPP: "
         sudo ./xampp-installer.run
         check_cmd
 
-        echo -n "Suppression du programme d'installation : "
+        echo -n "Removing the installer: "
         rm xampp-installer.run
         check_cmd
 
-        echo "XAMPP a été mis à jour."
+        echo "XAMPP has been updated."
     else
-        echo "XAMPP n'a pas été mis à jour."
+        echo "XAMPP has not been updated."
     fi
 fi
 
-if [ "$IS_UPDATE_AVAILABLE" == "false" ]; then
-    echo "Aucune mise à jour disponible."
+if [ "$is_update_available" == "false" ]; then
+    echo "No updates available."
     exit 0
 fi
 
-if [[ -n "$PKG_NEED_REBOOT" ]]; then
-    echo -ne "${YELLOW}Redémarrage nécéssaire: ${CYAN}$PKG_NEED_REBOOT ${YELLOW}a été mis à jour, redémarrer maintenant ? [y/N] : $RESET_CLR"
-    read RESPONSE
+if [[ -n "$pkg_need_reboot" ]]; then
+    echo -ne "${YELLOW}Restart required: ${CYAN}$pkg_need_reboot ${YELLOW}has been updated, restart now? [y/N] : $RESET_CLR"
+    read response
     
-    if [ "$RESPONSE" == "y" ]; then
+    if [ "$response" == "y" ]; then
         reboot
     else
         exit 0
