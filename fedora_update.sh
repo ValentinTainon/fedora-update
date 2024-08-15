@@ -11,7 +11,7 @@ RESET_CLR="\e[0m"
 
 ### FUNCTIONS ###
 check_cmd() {
-    if [ $? -eq 0 ]; then
+    if [[ $? -eq 0 ]]; then
         echo -e "[$GREEN OK $RESET_CLR]"
     else
         echo -e "[$RED ERROR $RESET_CLR]"
@@ -21,6 +21,7 @@ check_cmd() {
 
 ### START OF SCRIPT ###
 is_update_available="false"
+pkg_need_reboot=""
 
 ### FIRMWARES ###
 if ! fwupdmgr get-updates 2>&1 | grep -q "No updates available"; then
@@ -31,16 +32,19 @@ if ! fwupdmgr get-updates 2>&1 | grep -q "No updates available"; then
     sudo fwupdmgr update
 fi
 
-### DNF ###
+### RPM ###
 dnf check-update >/dev/null 2>&1
 
 if [[ $? -eq 100 ]]; then
     is_update_available="true"
-    pkg_need_reboot=$(dnf check-update | grep -Eo '^(dbus-broker|glibc|kernel|linux-firmware|systemd)' | sort | uniq | xargs)
 
-    echo -e "${MAGENTA}DNF : $RESET_CLR"
+    echo -e "${MAGENTA}RPM : $RESET_CLR"
 
     sudo dnf update
+
+    if  [[ $? -eq 0 ]]; then
+        pkg_need_reboot=$(dnf history info last | grep -Eo '(dbus-broker|glibc|kernel|linux-firmware|systemd)' | sort | uniq | xargs)
+    fi
 fi
 
 ### FLATPAK ###
@@ -68,10 +72,10 @@ if [[ $xampp_device_version -lt $xampp_web_version ]]; then
         xampp_installer_link=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep 'xampp-linux' | grep -Po '(?<=download_success.html" href=")[^"]+')
         
         echo -n "Downloading the XAMPP installer: "
-        wget -q "$xampp_installer_link" -O xampp-installer.run >/dev/null
+        wget -q "$xampp_installer_link" -O xampp-installer.run >/dev/null 2>&1
         check_cmd
 
-        echo -n "Configuring installer rights: "
+        echo -n "Configuring installer execution rights: "
         sudo chmod u+x xampp-installer.run
         check_cmd
 
