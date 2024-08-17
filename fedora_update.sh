@@ -9,19 +9,16 @@ MAGENTA="\e[35m"
 CYAN="\e[36m"
 RESET_CLR="\e[0m"
 
-### FUNCTIONS ###
-check_cmd() {
-    if [[ $? -eq 0 ]]; then
-        echo -e "[${GREEN} OK ${RESET_CLR}]"
-    else
-        echo -e "[${RED} ERROR ${RESET_CLR}]"
-        exit 1
-    fi
-}
 
 ### START OF SCRIPT ###
 is_update_available="false"
 pkg_need_reboot=""
+
+### TEST ROOT ###
+if [ "$(whoami)" != "root" ]; then
+    echo -e "[${RED} ERROR ${RESET_CLR}] Unauthorized user. Please restart the script as root."
+    exit 1
+fi
 
 ### BIOS & FIRMWARES ###
 bios_device_version=$(sudo dmidecode -t bios | grep -Po '(?<=Version: )\d+')
@@ -29,12 +26,12 @@ bios_latest_version=1663
 
 if [[ $bios_device_version -lt $bios_latest_version ]]; then
     is_update_available="true"
-    bios_web_url="https://rog.asus.com/fr/motherboards/rog-strix/rog-strix-b760-i-gaming-wifi-model/helpdesk_bios/"
+    bios_website_url="https://rog.asus.com/fr/motherboards/rog-strix/rog-strix-b760-i-gaming-wifi-model/helpdesk_bios/"
 
     echo -e "${MAGENTA}BIOS:${RESET_CLR}"
 
     echo -e "New BIOS version available! Download it from:
-    ${CYAN}${bios_web_url}${RESET_CLR}
+    ${CYAN}${bios_website_url}${RESET_CLR}
     " | sed 's/^[ \t]*//'
 
     echo -e "${YELLOW}Press enter to continue executing the script...${RESET_CLR}"
