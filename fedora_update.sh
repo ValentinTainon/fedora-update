@@ -73,43 +73,6 @@ if ! flatpak update | grep -q "Nothing to do"; then
     flatpak update
 fi
 
-### XAMPP ###
-xampp_device_version=$(grep -Po '(?<=base_stack_version=).*(?=-)' /opt/lampp/properties.ini | sed 's/\.//g')
-xampp_latest_version=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep -Po '(?<=xampp-linux-x64-).*(?=-.*-installer.run)' | sed 's/\.//g')
-
-if [[ $xampp_device_version -lt $xampp_latest_version ]]; then
-    is_update_available="true"
-
-    echo -e "${MAGENTA}XAMPP:${RESET_CLR}"
-    
-    echo -ne "${YELLOW}New version available! Do you want to update? [y/N] : ${RESET_CLR}"
-    read response
-
-    if [ "$response" == "y" ]; then
-        xampp_installer_link=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep 'xampp-linux' | grep -Po '(?<=download_success.html" href=")[^"]+')
-        
-        echo -n "Downloading the XAMPP installer: "
-        wget -q "$xampp_installer_link" -O xampp-installer.run >/dev/null 2>&1
-        check_cmd
-
-        echo -n "Configuring installer execution rights: "
-        sudo chmod u+x xampp-installer.run
-        check_cmd
-
-        echo -n "Installing XAMPP: "
-        sudo ./xampp-installer.run
-        check_cmd
-
-        echo -n "Removing the installer: "
-        rm xampp-installer.run
-        check_cmd
-
-        echo "XAMPP has been updated."
-    else
-        echo "XAMPP has not been updated."
-    fi
-fi
-
 if [ "$is_update_available" == "false" ]; then
     echo "No updates available."
     exit 0
