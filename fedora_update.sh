@@ -25,9 +25,9 @@ pkg_need_reboot=""
 
 ### BIOS & FIRMWARES ###
 bios_device_version=$(sudo dmidecode -t bios | grep -Po '(?<=Version: )\d+')
-bios_web_version=1663
+bios_latest_version=1663
 
-if [[ $bios_device_version -lt $bios_web_version ]]; then
+if [[ $bios_device_version -lt $bios_latest_version ]]; then
     is_update_available="true"
     bios_web_url="https://rog.asus.com/fr/motherboards/rog-strix/rog-strix-b760-i-gaming-wifi-model/helpdesk_bios/"
 
@@ -40,7 +40,6 @@ if [[ $bios_device_version -lt $bios_web_version ]]; then
     echo -e "${YELLOW}Press enter to continue executing the script...${RESET_CLR}"
     read response
 fi
-
 
 if ! fwupdmgr get-updates 2>&1 | grep -q "No updates available"; then
     is_update_available="true"
@@ -76,9 +75,9 @@ fi
 
 ### XAMPP ###
 xampp_device_version=$(grep -Po '(?<=base_stack_version=).*(?=-)' /opt/lampp/properties.ini | sed 's/\.//g')
-xampp_web_version=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep -Po '(?<=xampp-linux-x64-).*(?=-.*-installer.run)' | sed 's/\.//g')
+xampp_latest_version=$(curl -s 'https://www.apachefriends.org/fr/index.html' | grep -Po '(?<=xampp-linux-x64-).*(?=-.*-installer.run)' | sed 's/\.//g')
 
-if [[ $xampp_device_version -lt $xampp_web_version ]]; then
+if [[ $xampp_device_version -lt $xampp_latest_version ]]; then
     is_update_available="true"
 
     echo -e "${MAGENTA}XAMPP:${RESET_CLR}"
