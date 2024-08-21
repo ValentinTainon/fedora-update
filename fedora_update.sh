@@ -67,7 +67,7 @@ if ! flatpak update | grep -q "Nothing to do"; then
 
     echo -e "${MAGENTA}FLATPAK:${RESET_CLR}"
 
-    flatpak update
+    sudo flatpak update
 fi
 
 if [ "$is_update_available" == "false" ]; then
