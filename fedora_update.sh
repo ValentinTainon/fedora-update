@@ -21,7 +21,7 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 ### BIOS & FIRMWARES ###
-bios_device_version=$(sudo dmidecode -t bios | grep -Po '(?<=Version: )\d+')
+bios_device_version=$(sudo dmidecode -t bios | grep -Poi '(?<=version: )\d+')
 bios_latest_version=1663
 
 if [[ $bios_device_version -lt $bios_latest_version ]]; then
@@ -38,7 +38,7 @@ if [[ $bios_device_version -lt $bios_latest_version ]]; then
     read response
 fi
 
-if ! fwupdmgr get-updates 2>&1 | grep -q "No updates available"; then
+if ! fwupdmgr get-updates 2>&1 | grep -qi "no updates available"; then
     is_update_available="true"
 
     echo -e "${MAGENTA}FIRMWARES:${RESET_CLR}"
@@ -62,7 +62,7 @@ if [[ $? -eq 100 ]]; then
 fi
 
 ### FLATPAK ###
-if ! flatpak update | grep -q "Nothing to do"; then
+if ! flatpak update | grep -qi "nothing to do"; then
     is_update_available="true"
 
     echo -e "${MAGENTA}FLATPAK:${RESET_CLR}"
