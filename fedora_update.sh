@@ -21,23 +21,6 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 ### BIOS & FIRMWARES ###
-bios_device_version=$(sudo dmidecode -t bios | grep -Poi '(?<=version: )\d+')
-bios_latest_version=1663
-
-if [[ $bios_device_version -lt $bios_latest_version ]]; then
-    is_update_available="true"
-    bios_website_url="https://rog.asus.com/fr/motherboards/rog-strix/rog-strix-b760-i-gaming-wifi-model/helpdesk_bios/"
-
-    echo -e "${MAGENTA}BIOS:${RESET_CLR}"
-
-    echo -e "New BIOS version available! Download it from:
-    ${CYAN}${bios_website_url}${RESET_CLR}
-    " | sed 's/^[ \t]*//'
-
-    echo -e "${YELLOW}Press enter to continue executing the script...${RESET_CLR}"
-    read response
-fi
-
 if ! fwupdmgr get-updates 2>&1 | grep -qi "no updates available"; then
     is_update_available="true"
 
