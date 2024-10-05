@@ -59,13 +59,13 @@ if [ "$is_update_available" == "false" ]; then
 fi
 
 if [[ -n "$pkg_need_reboot" ]]; then
-    echo -ne "${YELLOW}Restart required: ${CYAN}$pkg_need_reboot ${YELLOW}has been updated, restart now? [y/N] : ${RESET_CLR}"
+    echo -ne "${YELLOW}Restart required: ${CYAN}$pkg_need_reboot ${YELLOW}has been updated, restart now? [Y/n] : ${RESET_CLR}"
     read response
     
-    if [ "$response" == "y" ]; then
-        reboot
-    else
+    if [ "$response" == "n" ]; then
         exit 0
+    else
+        sudo reboot
     fi
 fi
 ### END OF SCRIPT ###
